@@ -67,6 +67,9 @@ func ParseCheckArgs(args []string) (*CheckArgs, error) {
 	}
 
 	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			os.Exit(0)
+		}
 		return nil, err
 	}
 

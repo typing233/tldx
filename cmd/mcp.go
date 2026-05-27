@@ -2,9 +2,15 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"time"
+	"tldx/internal/checker"
+	"tldx/internal/domain"
+	"tldx/internal/rdap"
 )
 
 func runMCP(_ []string) int {
@@ -152,32 +158,56 @@ func handleToolCall(req jsonRPCRequest) {
 		tlds = []string{"com"}
 	}
 
-	var domains []string
-	prefixes := toolArgs.Prefixes
-	if len(prefixes) == 0 {
-		prefixes = []string{""}
-	}
-	suffixes := toolArgs.Suffixes
-	if len(suffixes) == 0 {
-		suffixes = []string{""}
-	}
-	for _, p := range prefixes {
-		for _, k := range toolArgs.Keywords {
-			for _, s := range suffixes {
-				for _, tld := range tlds {
-					name := p + k + s
-					if name != "" {
-						domains = append(domains, name+"."+tld)
-					}
-				}
-			}
-		}
+	candidates := domain.Generate(domain.GenerateConfig{
+		Keywords: toolArgs.Keywords,
+		Prefixes: toolArgs.Prefixes,
+		Suffixes: toolArgs.Suffixes,
+		TLDs:     tlds,
+	})
+
+	if len(candidates) == 0 {
+		writeJSONRPCResult(req.ID, map[string]interface{}{
+			"content": []map[string]interface{}{
+				{"type": "text", "text": "No candidate domains generated"},
+			},
+		})
+		return
 	}
 
-	result, _ := json.Marshal(domains)
+	httpClient := &http.Client{Timeout: 10 * time.Second}
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	bootstrap := rdap.NewBootstrap(ctx, httpClient)
+	rdapClient := rdap.NewClient(httpClient, bootstrap, 1)
+	pool := checker.NewPool(rdapClient, 3)
+
+	results := pool.Run(ctx, candidates)
+
+	type domainResult struct {
+		Domain    string `json:"domain"`
+		Available bool   `json:"available"`
+		Error     string `json:"error,omitempty"`
+	}
+
+	var checked []domainResult
+	var availableList []string
+	for r := range results {
+		dr := domainResult{Domain: r.Domain, Available: r.Available}
+		if r.Error != nil {
+			dr.Error = r.Error.Error()
+		} else if r.Available {
+			availableList = append(availableList, r.Domain)
+		}
+		checked = append(checked, dr)
+	}
+
+	output, _ := json.MarshalIndent(checked, "", "  ")
+	summary := fmt.Sprintf("Checked %d domains, %d available.\n\n%s", len(checked), len(availableList), string(output))
+
 	writeJSONRPCResult(req.ID, map[string]interface{}{
 		"content": []map[string]interface{}{
-			{"type": "text", "text": fmt.Sprintf("Generated %d candidate domains:\n%s\n\nNote: Full RDAP checking is available via CLI mode.", len(domains), string(result))},
+			{"type": "text", "text": summary},
 		},
 	})
 }
