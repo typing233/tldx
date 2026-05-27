@@ -57,7 +57,7 @@ func ParseCheckArgs(args []string) (*CheckArgs, error) {
 	fs.IntVar(&result.Concurrency, "c", 5, "Number of concurrent workers")
 	fs.DurationVar(&result.Timeout, "timeout", 10*time.Second, "HTTP request timeout")
 	fs.IntVar(&result.Retries, "retries", 1, "Number of retries on transient errors")
-	fs.StringVar(&result.Format, "format", "text", "Output format: text or json")
+	fs.StringVar(&result.Format, "format", "text", "Output format: text or json-array")
 	fs.BoolVar(&result.NoColor, "no-color", false, "Disable colored output")
 	fs.BoolVar(&result.AvailableOnly, "available-only", false, "Only show available domains")
 
