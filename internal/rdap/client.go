@@ -2,8 +2,11 @@ package rdap
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -75,6 +78,9 @@ func (c *Client) doCheck(ctx context.Context, url, domain string) (CheckResult, 
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		if isNetworkRetryable(err) {
+			return CheckResult{Domain: domain}, &retryableError{msg: fmt.Sprintf("network error: %v", err)}
+		}
 		return CheckResult{Domain: domain}, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
@@ -110,6 +116,32 @@ func (e *retryableError) Error() string {
 }
 
 func isRetryable(err error) bool {
-	_, ok := err.(*retryableError)
-	return ok
+	var re *retryableError
+	return errors.As(err, &re)
+}
+
+func isNetworkRetryable(err error) bool {
+	if errors.Is(err, context.Canceled) {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		return netErr.Timeout()
+	}
+	var opErr *net.OpError
+	if errors.As(err, &opErr) {
+		return true
+	}
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		return urlErr.Timeout() || urlErr.Temporary()
+	}
+	var dnsErr *net.DNSError
+	if errors.As(err, &dnsErr) {
+		return dnsErr.IsTemporary
+	}
+	return false
 }

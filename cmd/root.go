@@ -58,7 +58,7 @@ Options (for check):
   -c, --concurrency <n>     Number of concurrent workers (default: 5)
       --timeout <duration>  HTTP request timeout (default: 10s)
       --retries <n>         Retry count on transient errors (default: 1)
-      --format <fmt>        Output format: text or json (default: text)
+      --format <fmt>        Output format: text or json-array (default: text)
       --no-color            Disable colored output
       --available-only      Only show available domains
 
@@ -66,7 +66,7 @@ Examples:
   tldx -k hello,world -t com,ai
   tldx -k app -p get,my -s hq --preset tech --available-only
   tldx -f keywords.txt --preset popular --limit 5
-  echo -e "test\ndemo" | tldx -f - -t io --format json
+  echo -e "test\ndemo" | tldx -f - -t io --format json-array
   tldx presets
 
 `, version)

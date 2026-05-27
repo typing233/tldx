@@ -58,7 +58,7 @@ func TestParseCheckArgsAllFlags(t *testing.T) {
 		"--concurrency", "10",
 		"--timeout", "5s",
 		"--retries", "2",
-		"--format", "json",
+		"--format", "json-array",
 		"--no-color",
 		"--available-only",
 	})
@@ -86,8 +86,8 @@ func TestParseCheckArgsAllFlags(t *testing.T) {
 	if args.Retries != 2 {
 		t.Errorf("retries = %d, want 2", args.Retries)
 	}
-	if args.Format != "json" {
-		t.Errorf("format = %q, want json", args.Format)
+	if args.Format != "json-array" {
+		t.Errorf("format = %q, want json-array", args.Format)
 	}
 	if !args.NoColor {
 		t.Error("expected no-color to be true")

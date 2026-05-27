@@ -48,8 +48,8 @@ tldx -f keywords.txt --preset popular
 # Pipe keywords from stdin
 echo -e "alpha\nbeta\ngamma" | tldx -f - -t ai,dev
 
-# JSON output
-tldx -k startup -p get --preset tech --format json
+# JSON array output
+tldx -k startup -p get --preset tech --format json-array
 
 # Filter long domains
 tldx -k internationalization -p my --max-length 15 -t com
@@ -97,24 +97,22 @@ Starts a JSON-RPC stdio server implementing the Model Context Protocol, exposing
 | `--concurrency` | `-c` | `5` | Concurrent workers |
 | `--timeout` | | `10s` | HTTP request timeout |
 | `--retries` | | `1` | Retries on transient errors |
-| `--format` | | `text` | Output: `text` or `json` |
+| `--format` | | `text` | Output: `text` or `json-array` |
 | `--no-color` | | | Disable colored output |
 | `--available-only` | | | Only show available domains |
 
 ## JSON Output Format
 
+With `--format json-array`, stdout receives a plain JSON array of available domains:
+
 ```json
-{
-  "available": ["example.dev", "example.ai"],
-  "stats": {
-    "total": 10,
-    "available": 2,
-    "unavailable": 7,
-    "errors": 1,
-    "duration_ms": 3200
-  }
-}
+[
+  "example.dev",
+  "example.ai"
+]
 ```
+
+Statistics are printed to stderr.
 
 ## How It Works
 

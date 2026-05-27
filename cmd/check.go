@@ -121,8 +121,9 @@ func runCheck(args []string) int {
 
 	stats.Duration = time.Since(startTime)
 
-	if checkArgs.Format == "json" {
-		output.PrintJSON(os.Stdout, available, stats)
+	if checkArgs.Format == "json-array" {
+		output.PrintJSONArray(os.Stdout, available)
+		output.PrintStats(os.Stderr, stats)
 	} else {
 		output.PrintStats(os.Stdout, stats)
 	}

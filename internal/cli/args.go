@@ -115,8 +115,8 @@ func ParseCheckArgs(args []string) (*CheckArgs, error) {
 		result.TLDs = splitAndTrim(tlds)
 	}
 
-	if result.Format != "text" && result.Format != "json" {
-		return nil, fmt.Errorf("unsupported format %q (use text or json)", result.Format)
+	if result.Format != "text" && result.Format != "json-array" {
+		return nil, fmt.Errorf("unsupported format %q (use text or json-array)", result.Format)
 	}
 	if result.Concurrency < 1 {
 		result.Concurrency = 1
