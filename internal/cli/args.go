@@ -70,7 +70,6 @@ func ParseCheckArgs(args []string) (*CheckArgs, error) {
 		return nil, err
 	}
 
-	// Collect keywords from various sources
 	var kws []string
 
 	if file != "" {
@@ -85,11 +84,9 @@ func ParseCheckArgs(args []string) (*CheckArgs, error) {
 		kws = append(kws, splitAndTrim(keywords)...)
 	}
 
-	// Positional args as keywords
 	kws = append(kws, fs.Args()...)
 
 	if len(kws) == 0 {
-		// Try stdin if it's a pipe
 		if isStdinPipe() {
 			stdinKws, err := readKeywordsFromReader(os.Stdin)
 			if err != nil {

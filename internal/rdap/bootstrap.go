@@ -50,12 +50,10 @@ func NewBootstrap(ctx context.Context, httpClient *http.Client) *Bootstrap {
 		servers: make(map[string]string),
 	}
 
-	// Copy fallback servers
 	for k, v := range fallbackServers {
 		b.servers[k] = v
 	}
 
-	// Try to fetch live bootstrap data
 	b.fetchIANA(ctx, httpClient)
 
 	return b

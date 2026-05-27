@@ -27,7 +27,6 @@ func Run() int {
 		fmt.Printf("tldx %s\n", version)
 		return 0
 	default:
-		// Treat as check with args
 		return runCheck(os.Args[1:])
 	}
 }

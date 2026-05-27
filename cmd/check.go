@@ -26,7 +26,6 @@ func runCheck(args []string) int {
 		output.ColorEnabled = false
 	}
 
-	// Resolve TLDs
 	tlds := checkArgs.TLDs
 	if checkArgs.Preset != "" {
 		presetTLDs, ok := preset.Get(checkArgs.Preset)
@@ -40,10 +39,8 @@ func runCheck(args []string) int {
 		tlds = []string{"com"}
 	}
 
-	// Deduplicate TLDs
 	tlds = dedup(tlds)
 
-	// Generate candidates
 	candidates := domain.Generate(domain.GenerateConfig{
 		Keywords:  checkArgs.Keywords,
 		Prefixes:  checkArgs.Prefixes,
@@ -57,19 +54,15 @@ func runCheck(args []string) int {
 		return 1
 	}
 
-	// Setup HTTP client
 	httpClient := &http.Client{Timeout: checkArgs.Timeout}
 
-	// Fetch bootstrap
 	bootstrapCtx, bootstrapCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	bootstrap := rdap.NewBootstrap(bootstrapCtx, httpClient)
 	bootstrapCancel()
 
-	// Create RDAP client and pool
 	rdapClient := rdap.NewClient(httpClient, bootstrap, checkArgs.Retries)
 	pool := checker.NewPool(rdapClient, checkArgs.Concurrency)
 
-	// Run checks
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -103,7 +96,6 @@ func runCheck(args []string) int {
 
 		if checkArgs.Limit > 0 && foundCount >= checkArgs.Limit {
 			cancel()
-			// Drain remaining results
 			for r := range results {
 				stats.Total++
 				if r.Error != nil {

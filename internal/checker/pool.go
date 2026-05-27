@@ -22,7 +22,6 @@ func (p *Pool) Run(ctx context.Context, domains []string) <-chan Result {
 	jobs := make(chan string, p.concurrency*2)
 	results := make(chan Result, p.concurrency*2)
 
-	// Dispatcher
 	go func() {
 		defer close(jobs)
 		for _, d := range domains {
@@ -34,7 +33,6 @@ func (p *Pool) Run(ctx context.Context, domains []string) <-chan Result {
 		}
 	}()
 
-	// Workers
 	var wg sync.WaitGroup
 	for i := 0; i < p.concurrency; i++ {
 		wg.Add(1)
@@ -61,7 +59,6 @@ func (p *Pool) Run(ctx context.Context, domains []string) <-chan Result {
 		}()
 	}
 
-	// Closer
 	go func() {
 		wg.Wait()
 		close(results)

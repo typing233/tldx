@@ -34,7 +34,7 @@ func runMCP(_ []string) int {
 				},
 			})
 		case "notifications/initialized":
-			// No response needed for notifications
+			// No response needed
 		case "tools/list":
 			writeJSONRPCResult(req.ID, map[string]interface{}{
 				"tools": []map[string]interface{}{
@@ -147,7 +147,6 @@ func handleToolCall(req jsonRPCRequest) {
 		return
 	}
 
-	// For MCP, return generated domains as a simple list for now
 	tlds := toolArgs.TLDs
 	if len(tlds) == 0 {
 		tlds = []string{"com"}
